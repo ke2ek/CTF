@@ -1,10 +1,10 @@
 # plane market
 
-# Vulnerability
+## Vulnerability
 - Use After Free
 - Out of Bound (Not exploited)
 
-# Overview
+## Overview
 * There's 7 options. But 3 options are important.
 	* ![sell plane](./sell_plane.png?raw=true)
 	* ![delete plane](./delete_plane.png?raw=true)
@@ -24,7 +24,7 @@
 		* Once accessed in here, it's able to access the freed heap.
 		* [`Use After Free`]
 
-# Exploit
+## Exploit
 * Memory Leak
 	* Using main-arena's address from unsorted bin
 	```
