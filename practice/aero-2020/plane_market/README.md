@@ -50,6 +50,7 @@
 	sell_plane(fastbin) # allocated at addr of fastbin1
 	```
 	* ![2](./2.png?raw=true)
+	* ![3](./3.png?raw=true)
 	* Allocated `&_malloc_hook - 0x3`, which is name's address.
 		* Notice that name's address - 0x10 has a structure of heap chunk, fastbin.
 	* Just enetered the address of `system()`.
